@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════════
+     HERO SECTION
+═══════════════════════════════════════════════ -->
+<section class="hero-section">
+    <div class="hero-bg-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-7" data-aos="fade-right">
+                <div class="hero-badge mb-3">
+                    <i class="bi bi-stars me-2"></i>Modern Blogging Platform
+                </div>
+                <h1 class="hero-title">
+                    Share Your <span class="text-gradient">Ideas</span><br>
+                    With The World
+                </h1>
+                <p class="hero-subtitle">
+                    A beautiful space to write, share, and discover amazing stories.
+                    Built with Python & Flask for developers, by a developer.
+                </p>
+                <div class="hero-actions">
+                    <a href="#" class="btn btn-primary-custom btn-lg me-3">
+                        <i class="bi bi-pencil-square me-2"></i>Start Writing
+                    </a>
+                    <a href="#posts" class="btn btn-outline-custom btn-lg">
+                        <i class="bi bi-book me-2"></i>Read Posts
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-illustration">
+                    <div class="floating-card card-1">
+                        <i class="bi bi-pen-fill"></i>
+                        <span>Write</span>
+                    </div>
+                    <div class="floating-card card-2">
+                        <i class="bi bi-share-fill"></i>
+                        <span>Share</span>
+                    </div>
+                    <div class="floating-card card-3">
+                        <i class="bi bi-heart-fill"></i>
+                        <span>Connect</span>
+                    </div>
+                    <div class="hero-circle">
+                        <i class="bi bi-journal-richtext"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     STATS BAR
+═══════════════════════════════════════════════ -->
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-number">{{ posts|length }}</span>
+                <span class="stat-label">Posts</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number">1</span>
+                <span class="stat-label">Authors</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number">3</span>
+                <span class="stat-label">Categories</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number">Week 1</span>
+                <span class="stat-label">Progress</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     BLOG POSTS SECTION
+═══════════════════════════════════════════════ -->
+<section class="posts-section" id="posts">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <span class="section-badge">Latest Posts</span>
+            <h2 class="section-title">Recent <span class="text-gradient">Stories</span></h2>
+            <p class="section-subtitle">Explore the latest articles and tutorials</p>
+        </div>
+
+        <div class="row g-4">
+            {% for post in posts %}
+            <div class="col-lg-4 col-md-6">
+                <article class="post-card">
+                    <div class="post-card-header">
+                        <span class="post-category">{{ post.category }}</span>
+                    </div>
+                    <div class="post-card-body">
+                        <h3 class="post-title">
+                            <a href="#">{{ post.title }}</a>
+                        </h3>
+                        <p class="post-excerpt">{{ post.content[:120] }}...</p>
+                    </div>
+                    <div class="post-card-footer">
+                        <div class="post-meta">
+                            <div class="post-author">
+                                <div class="author-avatar">
+                                    {{ post.author[0] }}
+                                </div>
+                                <div class="author-info">
+                                    <span class="author-name">{{ post.author }}</span>
+                                    <span class="post-date">
+                                        <i class="bi bi-calendar3 me-1"></i>{{ post.date }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" class="btn btn-read-more">
+                            Read <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════
+     CTA SECTION
+═══════════════════════════════════════════════ -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h2 class="cta-title">Ready to share your story?</h2>
+                    <p class="cta-subtitle">Join FlaskBlog today and start writing amazing content.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                    <a href="#" class="btn btn-cta me-3">
+                        <i class="bi bi-person-plus me-2"></i>Register Free
+                    </a>
+                    <a href="#" class="btn btn-cta-outline">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="about-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <span class="section-badge">About</span>
+                <h1 class="section-title mt-2">About <span class="text-gradient">FlaskBlog</span></h1>
+                <p class="lead mt-4">
+                    FlaskBlog is a modern blogging platform built as part of an 8-week internship project
+                    using Python, Flask, and SQLite.
+                </p>
+                <div class="tech-stack mt-5">
+                    <h3 class="mb-4">🛠️ Tech Stack</h3>
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+                        <span class="tech-badge"><i class="bi bi-filetype-py me-1"></i>Python</span>
+                        <span class="tech-badge"><i class="bi bi-lightning me-1"></i>Flask</span>
+                        <span class="tech-badge"><i class="bi bi-database me-1"></i>SQLite</span>
+                        <span class="tech-badge"><i class="bi bi-bootstrap me-1"></i>Bootstrap</span>
+                        <span class="tech-badge"><i class="bi bi-filetype-html me-1"></i>HTML5</span>
+                        <span class="tech-badge"><i class="bi bi-filetype-css me-1"></i>CSS3</span>
+                        <span class="tech-badge"><i class="bi bi-github me-1"></i>GitHub</span>
+                    </div>
+                </div>
+                <div class="mt-5">
+                    <a href="{{ url_for('main.home') }}" class="btn btn-primary-custom btn-lg">
+                        <i class="bi bi-arrow-left me-2"></i>Back to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
