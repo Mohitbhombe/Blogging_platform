@@ -47,6 +47,9 @@ def create_app():
     from app.routes import main
     app.register_blueprint(main)
 
+    # ── Import models so Flask-Login's user_loader is registered ───
+    from app import models  # noqa: F401
+
     # ── Create database tables if they don't exist ─────────────────
     with app.app_context():
         db.create_all()

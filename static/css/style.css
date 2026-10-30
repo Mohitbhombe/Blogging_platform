@@ -658,3 +658,346 @@ body {
     .footer-links { justify-content: center; }
     .cta-box { padding: 2rem; }
 }
+
+/* ═══════════════════════════════════════════════
+   WEEK 2 — AUTH PAGES (Register / Login)
+═══════════════════════════════════════════════ */
+.auth-section {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    padding: 4rem 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(124, 58, 237, 0.08) 0%, transparent 60%);
+}
+
+.auth-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    color: white;
+    margin: 0 auto 1rem;
+    box-shadow: 0 8px 25px var(--glow);
+}
+
+.auth-title {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.auth-subtitle {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Form Labels */
+.auth-form .form-label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.3px;
+}
+
+/* Input wrapper with icon */
+.input-wrapper {
+    position: relative;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 1rem;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* Style the Bootstrap form-control inputs */
+.auth-form .form-control {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 1rem 0.75rem 2.8rem;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.auth-form .form-control:focus {
+    background: rgba(124, 58, 237, 0.05);
+    border-color: var(--primary);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15);
+    outline: none;
+}
+
+.auth-form .form-control::placeholder {
+    color: var(--text-muted);
+}
+
+.auth-form .form-control.is-invalid {
+    border-color: #f87171;
+    background: rgba(248, 113, 113, 0.05);
+}
+
+.auth-form .invalid-feedback {
+    color: #f87171;
+    font-size: 0.82rem;
+    margin-top: 0.3rem;
+}
+
+/* Remember me checkbox */
+.form-check-input {
+    background-color: transparent;
+    border-color: var(--border-color);
+    width: 16px;
+    height: 16px;
+}
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+.form-check-label {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+}
+
+/* Submit Button */
+.btn-auth-submit {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border: none;
+    color: white;
+    padding: 0.85rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 1rem;
+    transition: var(--transition);
+    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.4);
+    cursor: pointer;
+}
+.btn-auth-submit:hover {
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(124, 58, 237, 0.5);
+    color: white;
+}
+
+/* Footer link */
+.auth-footer {
+    text-align: center;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+.auth-footer p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+.auth-link {
+    color: var(--primary-light);
+    text-decoration: none;
+    font-weight: 600;
+    transition: var(--transition);
+}
+.auth-link:hover {
+    color: var(--secondary);
+}
+
+/* ═══════════════════════════════════════════════
+   WEEK 2 — NAVBAR AVATAR
+═══════════════════════════════════════════════ */
+.nav-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: white;
+    margin-right: 0.4rem;
+    vertical-align: middle;
+}
+
+/* ═══════════════════════════════════════════════
+   WEEK 2 — DASHBOARD
+═══════════════════════════════════════════════ */
+.dashboard-section {
+    padding: 4rem 0 6rem;
+}
+
+.dashboard-welcome {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem 2.5rem;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(6, 182, 212, 0.05));
+}
+
+.welcome-avatar {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 8px 25px var(--glow);
+}
+
+.welcome-title {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    margin: 0 0 0.25rem;
+}
+
+.welcome-subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    transition: var(--transition);
+    height: 100%;
+}
+.dashboard-card:hover {
+    border-color: rgba(124, 58, 237, 0.4);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(124, 58, 237, 0.1);
+}
+
+.dash-card-icon {
+    width: 55px;
+    height: 55px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.dash-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.dash-card-text {
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.6;
+}
+
+.btn-dash {
+    background: rgba(124, 58, 237, 0.1);
+    border: 1px solid var(--border-color);
+    color: var(--primary-light);
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: var(--transition);
+}
+.btn-dash:hover:not(.disabled) {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+}
+.btn-dash.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Account Info Card */
+.account-info-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2rem 2.5rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+/* Logout button */
+.btn-outline-danger-custom {
+    background: transparent;
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    color: #f87171;
+    padding: 0.65rem 2rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    transition: var(--transition);
+}
+.btn-outline-danger-custom:hover {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: #f87171;
+    color: #f87171;
+    transform: translateY(-2px);
+}

@@ -48,18 +48,34 @@
                     </li>
                 </ul>
 
-                <!-- Right side nav items -->
+                <!-- Right side nav items — dynamic based on login state -->
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link btn-nav-login" href="#">
-                            <i class="bi bi-box-arrow-in-right me-1"></i>Login
-                        </a>
-                    </li>
-                    <li class="nav-item ms-2">
-                        <a class="nav-link btn-nav-register" href="#">
-                            <i class="bi bi-person-plus me-1"></i>Register
-                        </a>
-                    </li>
+                    {% if current_user.is_authenticated %}
+                        <!-- Logged In: show username + dashboard + logout -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('main.dashboard') }}">
+                                <div class="nav-avatar">{{ current_user.username[0]|upper }}</div>
+                                {{ current_user.username }}
+                            </a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a class="nav-link btn-nav-login" href="{{ url_for('main.logout') }}">
+                                <i class="bi bi-box-arrow-right me-1"></i>Logout
+                            </a>
+                        </li>
+                    {% else %}
+                        <!-- Logged Out: show login + register -->
+                        <li class="nav-item">
+                            <a class="nav-link btn-nav-login" href="{{ url_for('main.login') }}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                            </a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a class="nav-link btn-nav-register" href="{{ url_for('main.register') }}">
+                                <i class="bi bi-person-plus me-1"></i>Register
+                            </a>
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
