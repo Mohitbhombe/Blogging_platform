@@ -1,157 +1,146 @@
 """
-app/routes.py
-URL Routes (Pages)
--------------------
-Defines all URL routes using Flask Blueprints.
-Week 2 adds: register, login, logout, dashboard routes.
+app/routes.py  —  Week 3: Blog Post CRUD
+C - Create  -> /post/new
+R - Read    -> /  and  /post/<id>
+U - Update  -> /post/<id>/edit
+D - Delete  -> /post/<id>/delete
 """
-
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import (Blueprint, render_template, redirect,
+                   url_for, flash, request, abort)
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from app.models import User
-from app.forms import RegistrationForm, LoginForm
+from app.models import User, Post
+from app.forms import RegistrationForm, LoginForm, PostForm
 
-# Blueprint groups all our routes
 main = Blueprint('main', __name__)
 
+POSTS_PER_PAGE = 6
 
-# ══════════════════════════════════════════════════════════════════
-# PUBLIC PAGES
-# ══════════════════════════════════════════════════════════════════
+
+# ── PUBLIC PAGES ──────────────────────────────────────────────
 
 @main.route('/')
 @main.route('/home')
 def home():
-    """Homepage — shows sample posts (real posts added in Week 3)."""
-    posts = [
-        {
-            'title': 'Welcome to FlaskBlog!',
-            'author': 'Mohit Bhombe',
-            'date': 'October 30, 2026',
-            'content': 'This is our first blog post. We built this platform using Python and Flask!',
-            'category': 'Announcement'
-        },
-        {
-            'title': 'Getting Started with Flask',
-            'author': 'Mohit Bhombe',
-            'date': 'October 30, 2026',
-            'content': 'Flask is a lightweight and powerful web framework for Python. Here we explore why Flask is great for beginners.',
-            'category': 'Tutorial'
-        },
-        {
-            'title': 'Why Python is Amazing',
-            'author': 'Mohit Bhombe',
-            'date': 'October 30, 2026',
-            'content': 'Python is one of the most popular languages in the world. Here are some reasons why developers love it.',
-            'category': 'Opinion'
-        },
-    ]
+    page  = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc()).all()
     return render_template('home.html', posts=posts, title='Home')
 
 
 @main.route('/about')
 def about():
-    """About page."""
     return render_template('about.html', title='About')
 
 
-# ══════════════════════════════════════════════════════════════════
-# AUTHENTICATION ROUTES
-# ══════════════════════════════════════════════════════════════════
+# ── AUTH ──────────────────────────────────────────────────────
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
-    """
-    Registration Route.
-    GET  → Show the registration form.
-    POST → Process the form data, create user, redirect to login.
-
-    If a user is already logged in, redirect them to home.
-    """
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
-
     form = RegistrationForm()
-
     if form.validate_on_submit():
-        # ── Hash the password (NEVER store plain text!) ────────────
-        # generate_password_hash creates a secure hash like:
-        # 'scrypt:32768:8:1$...' — impossible to reverse
-        hashed_password = generate_password_hash(form.password.data)
-
-        # ── Create a new User object ───────────────────────────────
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            password=hashed_password
-        )
-
-        # ── Save to database ───────────────────────────────────────
-        db.session.add(user)    # Stage the new user
-        db.session.commit()     # Write to the database file
-
-        # ── Show success message ───────────────────────────────────
-        flash(f'Account created for {form.username.data}! You can now log in.', 'success')
-
-        # ── Redirect to login page ─────────────────────────────────
+        user = User(username=form.username.data, email=form.email.data,
+                    password=generate_password_hash(form.password.data))
+        db.session.add(user); db.session.commit()
+        flash(f'Account created for {form.username.data}!', 'success')
         return redirect(url_for('main.login'))
-
     return render_template('auth/register.html', form=form, title='Register')
 
 
 @main.route('/login', methods=['GET', 'POST'])
 def login():
-    """
-    Login Route.
-    GET  → Show the login form.
-    POST → Check credentials, log in user, redirect to dashboard.
-    """
     if current_user.is_authenticated:
         return redirect(url_for('main.dashboard'))
-
     form = LoginForm()
-
     if form.validate_on_submit():
-        # ── Find user by email ─────────────────────────────────────
         user = User.query.filter_by(email=form.email.data).first()
-
-        # ── Check password against stored hash ─────────────────────
-        # check_password_hash compares form input with the stored hash
         if user and check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
-
-            # Redirect to the page the user originally wanted to visit
-            # (Flask-Login saves it in 'next' query parameter)
-            next_page = request.args.get('next')
             flash(f'Welcome back, {user.username}! 👋', 'success')
-            return redirect(next_page or url_for('main.dashboard'))
-        else:
-            flash('Login failed. Please check your email and password.', 'danger')
-
+            return redirect(request.args.get('next') or url_for('main.dashboard'))
+        flash('Login failed. Check email and password.', 'danger')
     return render_template('auth/login.html', form=form, title='Login')
 
 
 @main.route('/logout')
-@login_required  # Only logged-in users can access this route
+@login_required
 def logout():
-    """Log out the current user and redirect to homepage."""
     logout_user()
-    flash('You have been logged out successfully.', 'info')
+    flash('Logged out successfully.', 'info')
     return redirect(url_for('main.home'))
 
 
-# ══════════════════════════════════════════════════════════════════
-# PROTECTED PAGES (require login)
-# ══════════════════════════════════════════════════════════════════
+# ── DASHBOARD ─────────────────────────────────────────────────
 
 @main.route('/dashboard')
-@login_required  # Redirects to login if not authenticated
+@login_required
 def dashboard():
-    """
-    User Dashboard — only accessible when logged in.
-    @login_required decorator automatically redirects to login page
-    if the user is not authenticated.
-    """
-    return render_template('dashboard.html', title='Dashboard')
+    user_posts = Post.query.filter_by(author_id=current_user.id)\
+                           .order_by(Post.date_posted.desc()).all()
+    return render_template('dashboard.html', title='Dashboard', posts=user_posts)
+
+
+# ── POST CRUD ─────────────────────────────────────────────────
+
+@main.route('/post/new', methods=['GET', 'POST'])
+@login_required
+def create_post():
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(title=form.title.data, content=form.content.data,
+                    category=form.category.data, author=current_user)
+        db.session.add(post); db.session.commit()
+        flash('Your post has been published! 🎉', 'success')
+        return redirect(url_for('main.post_detail', post_id=post.id))
+    return render_template('post/create.html', form=form,
+                           title='New Post', legend='Create New Post')
+
+
+@main.route('/post/<int:post_id>')
+def post_detail(post_id):
+    post = db.get_or_404(Post, post_id)
+    return render_template('post/detail.html', post=post, title=post.title)
+
+
+@main.route('/post/<int:post_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_post(post_id):
+    post = db.get_or_404(Post, post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title    = form.title.data
+        post.content  = form.content.data
+        post.category = form.category.data
+        db.session.commit()
+        flash('Post updated! ✅', 'success')
+        return redirect(url_for('main.post_detail', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data    = post.title
+        form.content.data  = post.content
+        form.category.data = post.category
+    return render_template('post/create.html', form=form,
+                           title='Edit Post', legend='Edit Post')
+
+
+@main.route('/post/<int:post_id>/delete', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = db.get_or_404(Post, post_id)
+    if post.author != current_user:
+        abort(403)
+    db.session.delete(post); db.session.commit()
+    flash('Post deleted.', 'info')
+    return redirect(url_for('main.home'))
+
+
+@main.route('/user/<string:username>')
+def user_posts(username):
+    user  = User.query.filter_by(username=username).first_or_404()
+    posts = Post.query.filter_by(author=user)\
+                      .order_by(Post.date_posted.desc()).all()
+    return render_template('home.html', posts=posts,
+                           title=f"{username}'s Posts", author_filter=user)

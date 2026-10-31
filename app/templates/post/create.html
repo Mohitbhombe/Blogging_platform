@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="post-form-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Page Header -->
+                <div class="post-form-header mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="post-form-icon">
+                            {% if 'Edit' in legend %}
+                                <i class="bi bi-pencil-fill"></i>
+                            {% else %}
+                                <i class="bi bi-plus-lg"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h1 class="post-form-title">{{ legend }}</h1>
+                            <p class="post-form-subtitle">
+                                {% if 'Edit' in legend %}
+                                    Update your post below.
+                                {% else %}
+                                    Share your ideas with the world.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Post Form Card -->
+                <div class="post-form-card">
+                    <form method="POST" action="" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Title -->
+                        <div class="form-group mb-4">
+                            {{ form.title.label(class="form-label post-label") }}
+                            {% if form.title.errors %}
+                                {{ form.title(class="form-control form-control-lg post-input is-invalid",
+                                             placeholder="Enter a compelling title...") }}
+                                <div class="invalid-feedback">
+                                    {% for e in form.title.errors %}<span>{{ e }}</span>{% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.title(class="form-control form-control-lg post-input",
+                                             placeholder="Enter a compelling title...") }}
+                            {% endif %}
+                        </div>
+
+                        <!-- Category -->
+                        <div class="form-group mb-4">
+                            {{ form.category.label(class="form-label post-label") }}
+                            {% if form.category.errors %}
+                                {{ form.category(class="form-select post-select is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for e in form.category.errors %}<span>{{ e }}</span>{% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.category(class="form-select post-select") }}
+                            {% endif %}
+                        </div>
+
+                        <!-- Content -->
+                        <div class="form-group mb-4">
+                            {{ form.content.label(class="form-label post-label") }}
+                            {% if form.content.errors %}
+                                {{ form.content(class="form-control post-textarea is-invalid",
+                                               placeholder="Write your post content here...",
+                                               rows=15) }}
+                                <div class="invalid-feedback">
+                                    {% for e in form.content.errors %}<span>{{ e }}</span>{% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.content(class="form-control post-textarea",
+                                               placeholder="Write your post content here...",
+                                               rows=15) }}
+                            {% endif %}
+                            <div class="char-count" id="charCount">0 characters</div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="post-form-actions">
+                            {{ form.submit(class="btn btn-publish") }}
+                            <a href="{{ url_for('main.home') }}" class="btn btn-cancel">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Live character counter
+const content = document.querySelector('.post-textarea');
+const counter = document.getElementById('charCount');
+if (content && counter) {
+    const update = () => {
+        const len = content.value.length;
+        counter.textContent = `${len} character${len !== 1 ? 's' : ''}`;
+    };
+    content.addEventListener('input', update);
+    update();
+}
+</script>
+{% endblock %}

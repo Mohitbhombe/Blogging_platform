@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="post-detail-section">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+
+        <!-- Breadcrumb -->
+        <nav class="post-breadcrumb mb-4">
+          <a href="{{ url_for('main.home') }}"><i class="bi bi-house me-1"></i>Home</a>
+          <span class="breadcrumb-sep">/</span>
+          <span>{{ post.title }}</span>
+        </nav>
+
+        <!-- Post Article -->
+        <article class="post-detail-card">
+          <div class="post-detail-meta-top">
+            <span class="post-category-badge"><i class="bi bi-tag me-1"></i>{{ post.category }}</span>
+            <span class="post-detail-date">
+              <i class="bi bi-calendar3 me-1"></i>{{ post.date_posted.strftime('%B %d, %Y') }}
+            </span>
+          </div>
+
+          <h1 class="post-detail-title">{{ post.title }}</h1>
+
+          <div class="post-author-bar">
+            <div class="author-avatar-lg">{{ post.author.username[0]|upper }}</div>
+            <div>
+              <a href="{{ url_for('main.user_posts', username=post.author.username) }}"
+                 class="author-name-link">{{ post.author.username }}</a>
+              <p class="author-tagline">
+                <i class="bi bi-clock me-1"></i>{{ post.date_posted.strftime('%I:%M %p · %b %d, %Y') }}
+              </p>
+            </div>
+            {% if current_user.is_authenticated and post.author == current_user %}
+            <div class="ms-auto post-author-actions">
+              <a href="{{ url_for('main.edit_post', post_id=post.id) }}" class="btn btn-edit-post">
+                <i class="bi bi-pencil me-1"></i>Edit
+              </a>
+              <button type="button" class="btn btn-delete-post"
+                      data-bs-toggle="modal" data-bs-target="#deleteModal">
+                <i class="bi bi-trash me-1"></i>Delete
+              </button>
+            </div>
+            {% endif %}
+          </div>
+
+          <hr class="post-divider">
+          <div class="post-detail-content">{{ post.content | nl2br }}</div>
+        </article>
+
+        <div class="mt-4 text-center">
+          <a href="{{ url_for('main.home') }}" class="btn btn-back">
+            <i class="bi bi-arrow-left me-2"></i>Back to All Posts
+          </a>
+          <a href="{{ url_for('main.user_posts', username=post.author.username) }}"
+             class="btn btn-author-posts ms-2">
+            <i class="bi bi-person me-1"></i>More by {{ post.author.username }}
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content delete-modal-content">
+      <div class="modal-header border-0">
+        <div class="delete-modal-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      </div>
+      <div class="modal-body text-center">
+        <h4 class="delete-modal-title">Delete this post?</h4>
+        <p class="delete-modal-text">
+          This action <strong>cannot be undone</strong>.<br>
+          "<em>{{ post.title }}</em>" will be permanently deleted.
+        </p>
+      </div>
+      <div class="modal-footer border-0 justify-content-center gap-3">
+        <button type="button" class="btn btn-cancel-modal" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle me-2"></i>Cancel
+        </button>
+        <form action="{{ url_for('main.delete_post', post_id=post.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-confirm-delete">
+            <i class="bi bi-trash me-2"></i>Yes, Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
