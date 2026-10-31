@@ -1,6 +1,5 @@
 """
-app/routes.py  —  Week 4: Comments + Search & Filter + Pagination
-C/R/U/D for Posts  +  add_comment / delete_comment  +  /search
+app/routes.py  —  Week 5: User Profile Page
 """
 from flask import (Blueprint, render_template, redirect,
                    url_for, flash, request, abort)
@@ -8,7 +7,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
 from app.models import User, Post, Comment
-from app.forms import RegistrationForm, LoginForm, PostForm, CommentForm
+from app.forms import RegistrationForm, LoginForm, PostForm, CommentForm, ProfileForm
 
 main = Blueprint('main', __name__)
 POSTS_PER_PAGE = 6
@@ -68,7 +67,7 @@ def register():
         user = User(username=form.username.data, email=form.email.data,
                     password=generate_password_hash(form.password.data))
         db.session.add(user); db.session.commit()
-        flash(f'Account created for {form.username.data}!', 'success')
+        flash(f'Account created!', 'success')
         return redirect(url_for('main.login'))
     return render_template('auth/register.html', form=form, title='Register')
 
@@ -104,6 +103,25 @@ def dashboard():
     return render_template('dashboard.html', title='Dashboard', posts=user_posts)
 
 
+@main.route('/profile', methods=['GET', 'POST'])
+@login_required
+def profile():
+    """Week 5: Edit logged-in user's profile."""
+    form = ProfileForm()
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.email    = form.email.data
+        current_user.bio      = form.bio.data
+        db.session.commit()
+        flash('Profile updated successfully! ✅', 'success')
+        return redirect(url_for('main.profile'))
+    elif request.method == 'GET':
+        form.username.data = current_user.username
+        form.email.data    = current_user.email
+        form.bio.data      = current_user.bio or ''
+    return render_template('profile.html', form=form, title='Edit Profile')
+
+
 @main.route('/post/new', methods=['GET', 'POST'])
 @login_required
 def create_post():
@@ -112,10 +130,9 @@ def create_post():
         post = Post(title=form.title.data, content=form.content.data,
                     category=form.category.data, author=current_user)
         db.session.add(post); db.session.commit()
-        flash('Your post has been published! 🎉', 'success')
+        flash('Post published! 🎉', 'success')
         return redirect(url_for('main.post_detail', post_id=post.id))
-    return render_template('post/create.html', form=form,
-                           title='New Post', legend='Create New Post')
+    return render_template('post/create.html', form=form, title='New Post', legend='Create New Post')
 
 
 @main.route('/post/<int:post_id>')
@@ -123,7 +140,7 @@ def post_detail(post_id):
     post     = db.get_or_404(Post, post_id)
     comments = Comment.query.filter_by(post_id=post_id)\
                             .order_by(Comment.date_posted.asc()).all()
-    form     = CommentForm()
+    form = CommentForm()
     return render_template('post/detail.html', post=post,
                            comments=comments, form=form, title=post.title)
 
@@ -132,8 +149,7 @@ def post_detail(post_id):
 @login_required
 def edit_post(post_id):
     post = db.get_or_404(Post, post_id)
-    if post.author != current_user:
-        abort(403)
+    if post.author != current_user: abort(403)
     form = PostForm()
     if form.validate_on_submit():
         post.title    = form.title.data
@@ -146,16 +162,14 @@ def edit_post(post_id):
         form.title.data    = post.title
         form.content.data  = post.content
         form.category.data = post.category
-    return render_template('post/create.html', form=form,
-                           title='Edit Post', legend='Edit Post')
+    return render_template('post/create.html', form=form, title='Edit Post', legend='Edit Post')
 
 
 @main.route('/post/<int:post_id>/delete', methods=['POST'])
 @login_required
 def delete_post(post_id):
     post = db.get_or_404(Post, post_id)
-    if post.author != current_user:
-        abort(403)
+    if post.author != current_user: abort(403)
     db.session.delete(post); db.session.commit()
     flash('Post deleted.', 'info')
     return redirect(url_for('main.home'))
@@ -168,8 +182,7 @@ def user_posts(username):
     pagination = Post.query.filter_by(author=user)\
                            .order_by(Post.date_posted.desc())\
                            .paginate(page=page, per_page=POSTS_PER_PAGE, error_out=False)
-    posts = pagination.items
-    return render_template('home.html', posts=posts, pagination=pagination,
+    return render_template('home.html', posts=pagination.items, pagination=pagination,
                            title=f"{username}'s Posts", author_filter=user)
 
 
@@ -179,14 +192,12 @@ def add_comment(post_id):
     post = db.get_or_404(Post, post_id)
     form = CommentForm()
     if form.validate_on_submit():
-        comment = Comment(body=form.body.data, post_id=post.id,
-                          author_id=current_user.id)
+        comment = Comment(body=form.body.data, post_id=post.id, author_id=current_user.id)
         db.session.add(comment); db.session.commit()
         flash('Comment posted! 💬', 'success')
     else:
         for field, errors in form.errors.items():
-            for e in errors:
-                flash(e, 'danger')
+            for e in errors: flash(e, 'danger')
     return redirect(url_for('main.post_detail', post_id=post_id) + '#comments')
 
 

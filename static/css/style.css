@@ -1930,3 +1930,104 @@ body {
     .pagination-list { gap: 0.25rem; }
     .page-link-custom { min-width: 36px; height: 36px; font-size: 0.82rem; }
 }
+
+/* ═══════════════════════════════════════════════
+   WEEK 5 — USER PROFILE PAGE
+═══════════════════════════════════════════════ */
+.profile-section {
+    padding: 5rem 0;
+    min-height: calc(100vh - 80px);
+}
+
+.profile-header-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 2rem;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.profile-avatar-xl {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 8px 25px rgba(124,58,237,0.4);
+    border: 3px solid rgba(124,58,237,0.3);
+}
+
+.profile-username {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    color: var(--text-primary);
+    margin: 0 0 0.25rem;
+}
+
+.profile-email {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0 0 1rem;
+}
+
+.profile-stats-row {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.profile-stat {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.profile-bio-display {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+    font-style: italic;
+    border-left: 3px solid var(--primary);
+    padding-left: 1rem;
+}
+
+.profile-form-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+}
+
+.profile-form-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.profile-form-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .profile-header-card { flex-direction: column; align-items: center; text-align: center; }
+    .profile-stats-row { justify-content: center; }
+    .profile-bio-display { text-align: left; }
+}

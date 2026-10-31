@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <!-- Profile Header -->
+                <div class="profile-header-card">
+                    <div class="profile-avatar-xl" style="background: {{ current_user.avatar_color }};">
+                        {{ current_user.username[0]|upper }}
+                    </div>
+                    <div class="profile-header-info">
+                        <h1 class="profile-username">{{ current_user.username }}</h1>
+                        <p class="profile-email">
+                            <i class="bi bi-envelope me-1"></i>{{ current_user.email }}
+                        </p>
+                        <div class="profile-stats-row">
+                            <span class="profile-stat">
+                                <i class="bi bi-journals me-1"></i>
+                                {{ current_user.posts|length }} Post{{ 's' if current_user.posts|length != 1 }}
+                            </span>
+                            <span class="profile-stat">
+                                <i class="bi bi-chat-dots me-1"></i>
+                                {{ current_user.comments|length }} Comment{{ 's' if current_user.comments|length != 1 }}
+                            </span>
+                            <span class="profile-stat">
+                                <i class="bi bi-calendar3 me-1"></i>
+                                Joined {{ current_user.joined.strftime('%B %Y') }}
+                            </span>
+                        </div>
+                        {% if current_user.bio %}
+                        <p class="profile-bio-display">{{ current_user.bio }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Edit Profile Form -->
+                <div class="profile-form-card mt-4">
+                    <div class="profile-form-header">
+                        <i class="bi bi-pencil-square me-2"></i>
+                        <h2 class="profile-form-title">Edit Profile</h2>
+                    </div>
+
+                    <form method="POST" action="" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Username -->
+                        <div class="form-group mb-4">
+                            {{ form.username.label(class="form-label post-label") }}
+                            {% if form.username.errors %}
+                                {{ form.username(class="form-control post-input is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for e in form.username.errors %}<span>{{ e }}</span>{% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.username(class="form-control post-input") }}
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group mb-4">
+                            {{ form.email.label(class="form-label post-label") }}
+                            {% if form.email.errors %}
+                                {{ form.email(class="form-control post-input is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for e in form.email.errors %}<span>{{ e }}</span>{% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.email(class="form-control post-input") }}
+                            {% endif %}
+                        </div>
+
+                        <!-- Bio -->
+                        <div class="form-group mb-4">
+                            {{ form.bio.label(class="form-label post-label") }}
+                            {% if form.bio.errors %}
+                                {{ form.bio(class="form-control post-textarea is-invalid",
+                                           placeholder="Tell the world a little about yourself...",
+                                           rows=4) }}
+                                <div class="invalid-feedback">
+                                    {% for e in form.bio.errors %}<span>{{ e }}</span>{% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form.bio(class="form-control post-textarea",
+                                           placeholder="Tell the world a little about yourself...",
+                                           rows=4) }}
+                            {% endif %}
+                            <div class="char-count" id="bioCharCount">0 / 300</div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="post-form-actions">
+                            {{ form.submit(class="btn btn-publish") }}
+                            <a href="{{ url_for('main.dashboard') }}" class="btn btn-cancel">
+                                <i class="bi bi-x-circle me-2"></i>Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Bio character counter
+const bioTA = document.querySelector('textarea[name="bio"]');
+const bioCount = document.getElementById('bioCharCount');
+if (bioTA && bioCount) {
+    const update = () => {
+        const len = bioTA.value.length;
+        bioCount.textContent = `${len} / 300`;
+        bioCount.style.color = len > 270 ? '#f87171' : '';
+    };
+    bioTA.addEventListener('input', update);
+    update();
+}
+</script>
+{% endblock %}
