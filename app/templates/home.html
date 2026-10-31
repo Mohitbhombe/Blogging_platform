@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 
-<!-- HERO -->
 <section class="hero-section">
   <div class="hero-bg-shapes">
-    <div class="shape shape-1"></div>
-    <div class="shape shape-2"></div>
-    <div class="shape shape-3"></div>
+    <div class="shape shape-1"></div><div class="shape shape-2"></div><div class="shape shape-3"></div>
   </div>
   <div class="container">
     <div class="row align-items-center">
@@ -14,7 +11,20 @@
         <div class="hero-badge mb-3"><i class="bi bi-stars me-2"></i>Modern Blogging Platform</div>
         {% if author_filter %}
           <h1 class="hero-title">Posts by <span class="text-gradient">{{ author_filter.username }}</span></h1>
-          <p class="hero-subtitle">All blog posts by {{ author_filter.username }}.</p>
+          <p class="hero-subtitle">All posts by {{ author_filter.username }}.</p>
+          <a href="{{ url_for('main.home') }}" class="btn btn-outline-custom btn-lg">
+            <i class="bi bi-arrow-left me-2"></i>All Posts
+          </a>
+        {% elif search_query %}
+          <h1 class="hero-title">Results for <span class="text-gradient">"{{ search_query }}"</span></h1>
+          <p class="hero-subtitle">Found {{ pagination.total }} post{{ 's' if pagination.total != 1 }}
+            {% if category %} in <strong>{{ category }}</strong>{% endif %}.</p>
+          <a href="{{ url_for('main.home') }}" class="btn btn-outline-custom btn-lg">
+            <i class="bi bi-arrow-left me-2"></i>Back to All Posts
+          </a>
+        {% elif category %}
+          <h1 class="hero-title">Category: <span class="text-gradient">{{ category }}</span></h1>
+          <p class="hero-subtitle">{{ pagination.total }} post{{ 's' if pagination.total != 1 }} in this category.</p>
           <a href="{{ url_for('main.home') }}" class="btn btn-outline-custom btn-lg">
             <i class="bi bi-arrow-left me-2"></i>All Posts
           </a>
@@ -52,29 +62,66 @@
   </div>
 </section>
 
-<!-- STATS BAR -->
 <section class="stats-section">
   <div class="container">
     <div class="stats-bar">
       <div class="stat-item">
-        <span class="stat-number">{{ posts|length }}</span>
+        <span class="stat-number">{{ pagination.total }}</span>
         <span class="stat-label">Total Posts</span>
       </div>
       <div class="stat-divider"></div>
-      <div class="stat-item"><span class="stat-number">Week 3</span><span class="stat-label">Progress</span></div>
+      <div class="stat-item"><span class="stat-number">Week 4</span><span class="stat-label">Progress</span></div>
       <div class="stat-divider"></div>
-      <div class="stat-item"><span class="stat-number">CRUD</span><span class="stat-label">Complete</span></div>
+      <div class="stat-item"><span class="stat-number">Comments</span><span class="stat-label">Now Live</span></div>
+      <div class="stat-divider"></div>
+      <div class="stat-item"><span class="stat-number">Search</span><span class="stat-label">& Filter</span></div>
     </div>
   </div>
 </section>
 
-<!-- POSTS -->
+{% if not author_filter %}
+<section class="search-section">
+  <div class="container">
+    <form action="{{ url_for('main.search') }}" method="GET" class="search-form" id="searchForm">
+      <div class="search-input-wrap">
+        <i class="bi bi-search search-icon"></i>
+        <input type="text" name="q" id="searchInput" class="search-input"
+               placeholder="Search posts by title or content..."
+               value="{{ search_query or '' }}" autocomplete="off">
+        {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+        <button type="submit" class="search-btn" id="searchSubmit">
+          <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+    </form>
+    {% if categories %}
+    <div class="category-chips mt-3">
+      <a href="{{ url_for('main.home') }}"
+         class="category-chip {% if not category and not search_query %}active{% endif %}">
+        <i class="bi bi-grid me-1"></i>All
+      </a>
+      {% for cat in categories %}
+      <a href="{{ url_for('main.home', category=cat) }}"
+         class="category-chip {% if category == cat %}active{% endif %}">{{ cat }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endif %}
+
 <section class="posts-section" id="posts">
   <div class="container">
     <div class="section-header text-center mb-5">
-      <span class="section-badge">{% if author_filter %}{{ author_filter.username }}'s Posts{% else %}Latest Posts{% endif %}</span>
+      <span class="section-badge">
+        {% if author_filter %}{{ author_filter.username }}'s Posts
+        {% elif search_query %}Search Results
+        {% elif category %}{{ category }}
+        {% else %}Latest Posts{% endif %}
+      </span>
       <h2 class="section-title">Recent <span class="text-gradient">Stories</span></h2>
     </div>
+
     {% if posts %}
       <div class="row g-4">
         {% for post in posts %}
@@ -95,37 +142,82 @@
                   <span class="post-date"><i class="bi bi-calendar3 me-1"></i>{{ post.date_posted.strftime('%b %d, %Y') }}</span>
                 </div>
               </div>
-              <a href="{{ url_for('main.post_detail', post_id=post.id) }}" class="btn btn-read-more">
-                Read <i class="bi bi-arrow-right ms-1"></i>
-              </a>
+              <div class="d-flex align-items-center gap-2">
+                <span class="comment-count-badge">
+                  <i class="bi bi-chat me-1"></i>{{ post.comments|length }}
+                </span>
+                <a href="{{ url_for('main.post_detail', post_id=post.id) }}" class="btn btn-read-more">
+                  Read <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+              </div>
             </div>
           </article>
         </div>
         {% endfor %}
       </div>
+
+      {% if pagination.pages > 1 %}
+      <nav class="pagination-nav mt-5" aria-label="Post pagination">
+        <ul class="pagination-list">
+          <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link-custom"
+               href="{% if pagination.has_prev %}{{ url_for(request.endpoint, page=pagination.prev_num, q=search_query or '', category=category or '', username=author_filter.username if author_filter else '') }}{% else %}#{% endif %}">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          </li>
+          {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if page_num %}
+              <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                <a class="page-link-custom"
+                   href="{{ url_for(request.endpoint, page=page_num, q=search_query or '', category=category or '', username=author_filter.username if author_filter else '') }}">
+                  {{ page_num }}
+                </a>
+              </li>
+            {% else %}
+              <li class="page-item disabled"><span class="page-link-custom">…</span></li>
+            {% endif %}
+          {% endfor %}
+          <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link-custom"
+               href="{% if pagination.has_next %}{{ url_for(request.endpoint, page=pagination.next_num, q=search_query or '', category=category or '', username=author_filter.username if author_filter else '') }}{% else %}#{% endif %}">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+        <p class="pagination-info">
+          Showing {{ (pagination.page - 1) * pagination.per_page + 1 }}–{{ [(pagination.page * pagination.per_page), pagination.total] | min }}
+          of {{ pagination.total }} post{{ 's' if pagination.total != 1 }}
+        </p>
+      </nav>
+      {% endif %}
+
     {% else %}
       <div class="empty-state text-center">
         <div class="empty-icon"><i class="bi bi-journal-x"></i></div>
-        <h3 class="empty-title">No posts yet</h3>
-        <p class="empty-text">Be the first to share your ideas!</p>
-        {% if current_user.is_authenticated %}
-          <a href="{{ url_for('main.create_post') }}" class="btn btn-primary-custom mt-3">
-            <i class="bi bi-pencil-square me-2"></i>Write First Post
-          </a>
-        {% endif %}
+        <h3 class="empty-title">
+          {% if search_query %}No posts found for "{{ search_query }}"
+          {% elif category %}No posts in "{{ category }}"
+          {% elif author_filter %}{{ author_filter.username }} hasn't written any posts yet.
+          {% else %}No posts yet{% endif %}
+        </h3>
+        <p class="empty-text">
+          {% if search_query or category %}
+            <a href="{{ url_for('main.home') }}" class="auth-link">Clear filters</a>
+          {% else %}Be the first to share!{% endif %}
+        </p>
       </div>
     {% endif %}
   </div>
 </section>
 
-{% if not current_user.is_authenticated and not author_filter %}
+{% if not current_user.is_authenticated and not search_query and not category and not author_filter %}
 <section class="cta-section">
   <div class="container">
     <div class="cta-box">
       <div class="row align-items-center">
         <div class="col-lg-8">
           <h2 class="cta-title">Ready to share your story?</h2>
-          <p class="cta-subtitle">Join FlaskBlog today and start writing.</p>
+          <p class="cta-subtitle">Join FlaskBlog today and start writing amazing content.</p>
         </div>
         <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
           <a href="{{ url_for('main.register') }}" class="btn btn-cta me-3">

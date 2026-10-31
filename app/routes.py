@@ -1,31 +1,33 @@
 """
-app/routes.py  —  Week 3: Blog Post CRUD
-C - Create  -> /post/new
-R - Read    -> /  and  /post/<id>
-U - Update  -> /post/<id>/edit
-D - Delete  -> /post/<id>/delete
+app/routes.py  —  Week 4: Comments + Search & Filter + Pagination
+C/R/U/D for Posts  +  add_comment / delete_comment  +  /search
 """
 from flask import (Blueprint, render_template, redirect,
                    url_for, flash, request, abort)
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from app.models import User, Post
-from app.forms import RegistrationForm, LoginForm, PostForm
+from app.models import User, Post, Comment
+from app.forms import RegistrationForm, LoginForm, PostForm, CommentForm
 
 main = Blueprint('main', __name__)
-
 POSTS_PER_PAGE = 6
 
-
-# ── PUBLIC PAGES ──────────────────────────────────────────────
 
 @main.route('/')
 @main.route('/home')
 def home():
-    page  = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.date_posted.desc()).all()
-    return render_template('home.html', posts=posts, title='Home')
+    page     = request.args.get('page', 1, type=int)
+    category = request.args.get('category', '', type=str).strip()
+    query    = Post.query.order_by(Post.date_posted.desc())
+    if category:
+        query = query.filter_by(category=category)
+    pagination = query.paginate(page=page, per_page=POSTS_PER_PAGE, error_out=False)
+    posts      = pagination.items
+    all_cats   = db.session.query(Post.category).distinct().order_by(Post.category).all()
+    categories = [c[0] for c in all_cats]
+    return render_template('home.html', posts=posts, pagination=pagination,
+                           category=category, categories=categories, title='Home')
 
 
 @main.route('/about')
@@ -33,7 +35,29 @@ def about():
     return render_template('about.html', title='About')
 
 
-# ── AUTH ──────────────────────────────────────────────────────
+@main.route('/search')
+def search():
+    q        = request.args.get('q', '', type=str).strip()
+    category = request.args.get('category', '', type=str).strip()
+    page     = request.args.get('page', 1, type=int)
+    if not q and not category:
+        flash('Please enter a search term or pick a category.', 'info')
+        return redirect(url_for('main.home'))
+    query = Post.query
+    if q:
+        like  = f'%{q}%'
+        query = query.filter(db.or_(Post.title.ilike(like), Post.content.ilike(like)))
+    if category:
+        query = query.filter_by(category=category)
+    query      = query.order_by(Post.date_posted.desc())
+    pagination = query.paginate(page=page, per_page=POSTS_PER_PAGE, error_out=False)
+    posts      = pagination.items
+    all_cats   = db.session.query(Post.category).distinct().order_by(Post.category).all()
+    categories = [c[0] for c in all_cats]
+    return render_template('home.html', posts=posts, pagination=pagination,
+                           search_query=q, category=category, categories=categories,
+                           title=f'Search: {q}' if q else f'Category: {category}')
+
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
@@ -72,8 +96,6 @@ def logout():
     return redirect(url_for('main.home'))
 
 
-# ── DASHBOARD ─────────────────────────────────────────────────
-
 @main.route('/dashboard')
 @login_required
 def dashboard():
@@ -81,8 +103,6 @@ def dashboard():
                            .order_by(Post.date_posted.desc()).all()
     return render_template('dashboard.html', title='Dashboard', posts=user_posts)
 
-
-# ── POST CRUD ─────────────────────────────────────────────────
 
 @main.route('/post/new', methods=['GET', 'POST'])
 @login_required
@@ -100,8 +120,12 @@ def create_post():
 
 @main.route('/post/<int:post_id>')
 def post_detail(post_id):
-    post = db.get_or_404(Post, post_id)
-    return render_template('post/detail.html', post=post, title=post.title)
+    post     = db.get_or_404(Post, post_id)
+    comments = Comment.query.filter_by(post_id=post_id)\
+                            .order_by(Comment.date_posted.asc()).all()
+    form     = CommentForm()
+    return render_template('post/detail.html', post=post,
+                           comments=comments, form=form, title=post.title)
 
 
 @main.route('/post/<int:post_id>/edit', methods=['GET', 'POST'])
@@ -139,8 +163,40 @@ def delete_post(post_id):
 
 @main.route('/user/<string:username>')
 def user_posts(username):
-    user  = User.query.filter_by(username=username).first_or_404()
-    posts = Post.query.filter_by(author=user)\
-                      .order_by(Post.date_posted.desc()).all()
-    return render_template('home.html', posts=posts,
+    page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    pagination = Post.query.filter_by(author=user)\
+                           .order_by(Post.date_posted.desc())\
+                           .paginate(page=page, per_page=POSTS_PER_PAGE, error_out=False)
+    posts = pagination.items
+    return render_template('home.html', posts=posts, pagination=pagination,
                            title=f"{username}'s Posts", author_filter=user)
+
+
+@main.route('/post/<int:post_id>/comment', methods=['POST'])
+@login_required
+def add_comment(post_id):
+    post = db.get_or_404(Post, post_id)
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data, post_id=post.id,
+                          author_id=current_user.id)
+        db.session.add(comment); db.session.commit()
+        flash('Comment posted! 💬', 'success')
+    else:
+        for field, errors in form.errors.items():
+            for e in errors:
+                flash(e, 'danger')
+    return redirect(url_for('main.post_detail', post_id=post_id) + '#comments')
+
+
+@main.route('/comment/<int:comment_id>/delete', methods=['POST'])
+@login_required
+def delete_comment(comment_id):
+    comment = db.get_or_404(Comment, comment_id)
+    post_id = comment.post_id
+    if comment.author_id != current_user.id and comment.post.author != current_user:
+        abort(403)
+    db.session.delete(comment); db.session.commit()
+    flash('Comment deleted.', 'info')
+    return redirect(url_for('main.post_detail', post_id=post_id) + '#comments')

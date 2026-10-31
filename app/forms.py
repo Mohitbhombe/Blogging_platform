@@ -1,5 +1,5 @@
 """
-app/forms.py  —  Week 3: PostForm added
+app/forms.py  —  Week 4: CommentForm added
 """
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, BooleanField,
@@ -33,7 +33,6 @@ class LoginForm(FlaskForm):
 
 
 class PostForm(FlaskForm):
-    """Create / Edit a blog post."""
     title = StringField('Post Title',
         validators=[DataRequired(), Length(min=3, max=200)])
     category = SelectField('Category', choices=[
@@ -44,3 +43,10 @@ class PostForm(FlaskForm):
     content = TextAreaField('Content',
         validators=[DataRequired(), Length(min=10)])
     submit = SubmitField('Publish Post')
+
+
+class CommentForm(FlaskForm):
+    """Form for leaving a comment on a post."""
+    body   = TextAreaField('Your Comment',
+        validators=[DataRequired(), Length(min=2, max=1000)])
+    submit = SubmitField('Post Comment')
