@@ -1,56 +1,45 @@
 """
-app/__init__.py
-Flask Application Factory
---------------------------
-This file initializes the Flask app and all its extensions.
-Using the 'Application Factory' pattern allows us to create
-multiple instances of the app (e.g., for testing).
+app/__init__.py  —  Week 8: CSRFProtect added for AJAX support
 """
-
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_wtf.csrf import CSRFProtect
+from markupsafe import Markup
 from dotenv import load_dotenv
 import os
 
-# Load environment variables from .env file
 load_dotenv()
 
-# Initialize extensions (without binding to any app yet)
-db = SQLAlchemy()
+db           = SQLAlchemy()
 login_manager = LoginManager()
+csrf         = CSRFProtect()
 
 
 def create_app():
-    """
-    Application Factory Function.
-    Creates and configures the Flask application.
-    """
     app = Flask(__name__)
 
-    # ── Configuration ──────────────────────────────────────────────
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'fallback-dev-key')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
-        'DATABASE_URL', 'sqlite:///blog.db'
-    )
+    app.config['SECRET_KEY']                 = os.environ.get('SECRET_KEY', 'fallback-dev-key')
+    app.config['SQLALCHEMY_DATABASE_URI']    = os.environ.get('DATABASE_URL', 'sqlite:///blog.db')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['WTF_CSRF_HEADERS']           = ['X-CSRFToken', 'X-CSRF-Token']
 
-    # ── Initialize extensions with app ─────────────────────────────
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
 
-    # Redirect unauthorized users to login page
-    login_manager.login_view = 'main.login'
+    login_manager.login_view           = 'main.login'
     login_manager.login_message_category = 'info'
 
-    # ── Register Blueprints (route groups) ─────────────────────────
     from app.routes import main
     app.register_blueprint(main)
 
-    # ── Import models so Flask-Login's user_loader is registered ───
     from app import models  # noqa: F401
 
-    # ── Create database tables if they don't exist ─────────────────
+    @app.template_filter('nl2br')
+    def nl2br_filter(text):
+        return Markup(str(text).replace('\n', '<br>\n'))
+
     with app.app_context():
         db.create_all()
 
