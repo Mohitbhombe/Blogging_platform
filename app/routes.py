@@ -6,7 +6,7 @@ from flask import (Blueprint, render_template, redirect,
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db
-from app.models import User, Post, Comment
+from app.models import User, Post, Comment, Like
 from app.forms import RegistrationForm, LoginForm, PostForm, CommentForm, ProfileForm
 
 main = Blueprint('main', __name__)
@@ -211,3 +211,23 @@ def delete_comment(comment_id):
     db.session.delete(comment); db.session.commit()
     flash('Comment deleted.', 'info')
     return redirect(url_for('main.post_detail', post_id=post_id) + '#comments')
+
+
+# ── WEEK 6: LIKE SYSTEM ───────────────────────────────────────
+
+@main.route('/post/<int:post_id>/like', methods=['POST'])
+@login_required
+def toggle_like(post_id):
+    """Toggle like/unlike on a post. Returns JSON for AJAX."""
+    from flask import jsonify
+    post          = db.get_or_404(Post, post_id)
+    existing_like = Like.query.filter_by(user_id=current_user.id,
+                                         post_id=post_id).first()
+    if existing_like:
+        db.session.delete(existing_like); db.session.commit(); liked = False
+    else:
+        db.session.add(Like(user_id=current_user.id, post_id=post_id))
+        db.session.commit(); liked = True
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'liked': liked, 'like_count': post.like_count})
+    return redirect(url_for('main.post_detail', post_id=post_id))

@@ -48,6 +48,27 @@
 
           <hr class="post-divider">
           <div class="post-detail-content">{{ post.content | nl2br }}</div>
+
+          <!-- WEEK 6: Like Button + Reading Time -->
+          <div class="post-like-bar mt-4">
+            {% if current_user.is_authenticated %}
+            <button id="likeBtn"
+                    class="btn btn-like {% if user_liked %}liked{% endif %}"
+                    data-post-id="{{ post.id }}">
+              <i class="bi {% if user_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+              <span id="likeCount">{{ post.like_count }}</span>
+              <span id="likeLabel">{{ 'Liked' if user_liked else 'Like' }}</span>
+            </button>
+            {% else %}
+            <a href="{{ url_for('main.login', next=request.url) }}" class="btn btn-like">
+              <i class="bi bi-heart"></i>
+              <span>{{ post.like_count }}</span> <span>Like</span>
+            </a>
+            {% endif %}
+            <span class="post-detail-date ms-3">
+              <i class="bi bi-clock me-1"></i>{{ post.reading_time }} min read
+            </span>
+          </div>
         </article>
 
         <div class="mt-4 text-center">
@@ -178,6 +199,34 @@ if (commentTA && commentCount) {
     };
     commentTA.addEventListener('input', update);
     update();
+}
+</script>
+<script>
+const likeBtn = document.getElementById('likeBtn');
+if (likeBtn) {
+    likeBtn.addEventListener('click', async () => {
+        const postId = likeBtn.dataset.postId;
+        likeBtn.disabled = true;
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content || '';
+            const resp = await fetch(`/post/${postId}/like`, {
+                method: 'POST',
+                headers: {'X-Requested-With':'XMLHttpRequest','X-CSRFToken':csrfToken}
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                const icon  = likeBtn.querySelector('i');
+                const count = document.getElementById('likeCount');
+                const label = document.getElementById('likeLabel');
+                if (data.liked) { likeBtn.classList.add('liked'); icon.className='bi bi-heart-fill'; label.textContent='Liked'; }
+                else { likeBtn.classList.remove('liked'); icon.className='bi bi-heart'; label.textContent='Like'; }
+                count.textContent = data.like_count;
+                likeBtn.style.transform = 'scale(1.15)';
+                setTimeout(() => likeBtn.style.transform = '', 200);
+            }
+        } catch(e) { console.error(e); }
+        likeBtn.disabled = false;
+    });
 }
 </script>
 {% endblock %}
